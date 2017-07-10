@@ -28,8 +28,13 @@ function add(cat, callback) {
   console.log('Someone tried to add a cat.')
 }
 
+function listCats(callback) {
+  callback(null, catsData)
+}
+
 const dal = {
-  add
+  add,
+  listCats
 }
 
 module.exports = dal
