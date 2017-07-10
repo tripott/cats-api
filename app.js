@@ -49,14 +49,23 @@ app.get('/cats/:id', function(req, res, next) {
 app.put('/cats/:id', function(req, res, next) {
   const catId = req.params.id
   console.log('cat id: ', catId)
-  console.log('PUT /cats, req.body: ', req.body)
+  console.log('PUT /cats/:id, req.body: ', req.body)
 
-  dal.update(Number(catId), req.body, function(err, data) {
+  dal.updateCat(Number(catId), req.body, function(err, data) {
     if (err) return next(new HTTPError(err.status, err.message, err))
     res.status(200).send(data)
   })
 })
-//   DELETE -  DELETE /cats/:id
+
+// DELETE -  DELETE /cats/:id
+app.delete('/cats/:id', function(req, res, next) {
+  const catId = req.params.id
+
+  dal.deleteCat(Number(catId), function(err, data) {
+    if (err) return next(new HTTPError(err.status, err.message, err))
+    res.status(200).send(data)
+  })
+})
 
 //   LIST - GET /cats
 app.get('/cats', function(req, res, next) {
