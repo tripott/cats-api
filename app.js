@@ -1,9 +1,12 @@
+require('dotenv').config()
+
 const express = require('express')
 const app = express()
 const dal = require('./dal.js')
 const port = process.env.PORT || 4000
 const HTTPError = require('node-http-error')
 const bodyParser = require('body-parser')
+const { pathOr } = require('ramda')
 
 app.use(bodyParser.json())
 
@@ -32,10 +35,10 @@ app.post('/cats', function(req, res, next) {
 })
 
 // READ - GET /cats/:id
-app.get('/cats/:id', function(req, res, next) {
-  dal.getCat(Number(req.params.id), function(err, data) {
-    if (err) return next(new HTTPError(err.status, err.message, err))
 
+app.get('/cats/:id', function(req, res, next) {
+  dal.getCat(req.params.id, function(err, data) {
+    if (err) return next(new HTTPError(err.status, err.message, err))
     if (data) {
       res.status(200).send(data)
     } else {
@@ -46,12 +49,29 @@ app.get('/cats/:id', function(req, res, next) {
 
 //   UPDATE -  PUT /cats/:id
 
+// app.put('/cats/:id', function(req, res, next) {
+//   const catId = req.params.id
+//   console.log('cat id: ', catId)
+//   console.log('PUT /cats/:id, req.body: ', req.body)
+//
+//   dal.updateCat(Number(catId), req.body, function(err, data) {
+//     if (err) return next(new HTTPError(err.status, err.message, err))
+//     res.status(200).send(data)
+//   })
+// })
+
 app.put('/cats/:id', function(req, res, next) {
   const catId = req.params.id
-  console.log('cat id: ', catId)
-  console.log('PUT /cats/:id, req.body: ', req.body)
+  console.log('cat id:', catId)
 
-  dal.updateCat(Number(catId), req.body, function(err, data) {
+  const requestBodyCat = pathOr('no body', ['body'], req)
+
+  console.log('req.body:', requestBodyCat)
+
+  if (catId != requestBodyCat._id) {
+    return next(new HTTPError(400, 'Bad Request, meow.'))
+  }
+  dal.updateCat(requestBodyCat, function(err, data) {
     if (err) return next(new HTTPError(err.status, err.message, err))
     res.status(200).send(data)
   })
@@ -59,10 +79,11 @@ app.put('/cats/:id', function(req, res, next) {
 
 // DELETE -  DELETE /cats/:id
 app.delete('/cats/:id', function(req, res, next) {
-  const catId = req.params.id
-
-  dal.deleteCat(Number(catId), function(err, data) {
+  const catId = Number(req.params.id)
+  console.log('cat id: ', catId)
+  dal.deleteCat(catId, function(err, data) {
     if (err) return next(new HTTPError(err.status, err.message, err))
+
     res.status(200).send(data)
   })
 })
