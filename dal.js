@@ -15,8 +15,6 @@ function addCat(cat, callback) {
     if (err) callback(err)
     callback(null, doc)
   })
-
-  //console.log('cat PK value: ', catPKGenerator(cat, 'cat_'))
 }
 
 function updateCat(updatedCat, callback) {

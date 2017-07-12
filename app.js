@@ -6,7 +6,7 @@ const dal = require('./dal.js')
 const port = process.env.PORT || 4000
 const HTTPError = require('node-http-error')
 const bodyParser = require('body-parser')
-const { pathOr, keys, difference } = require('ramda')
+const { pathOr, keys, difference, path } = require('ramda')
 
 const checkRequiredFields = require('./lib/check-required-fields')
 
@@ -22,8 +22,6 @@ app.get('/', function(req, res, next) {
 
 //   CREATE  - POST /cats
 app.post('/cats', function(req, res, next) {
-  console.log('POST /cats, req.body: ', req.body)
-
   const arrFieldsFailedValidation = checkRequiredFields(
     ['type', 'name', 'ownerId'],
     req.body
@@ -35,6 +33,10 @@ app.post('/cats', function(req, res, next) {
         fields: arrFieldsFailedValidation
       })
     )
+  }
+
+  if (path(['body', 'type'], req) != 'cat') {
+    return next(new HTTPError(400, "'type' field value must be equal to 'cat'"))
   }
 
   dal.addCat(req.body, function(err, data) {
