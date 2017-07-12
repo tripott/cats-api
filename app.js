@@ -124,8 +124,16 @@ app.get('/cats', function(req, res, next) {
 /////////////////////////
 //      BREEDS
 /////////////////////////
-//   LIST - GET /breeds
+// CRUDL
+// CREATE - POST /breeds  (Hint: need a req.body)
+app.post('/breeds', function(req, res, next) {})
+// READ - GET /breeds/:id
 
+// UPDATE - PUT /breeds/:id   (Hint: need a req.body)
+
+// DELETE - DELETE /breeds/:id
+
+//  LIST - GET /breeds
 app.get('/breeds', function(req, res, next) {
   const limit = pathOr(null, ['query', 'limit'], req)
 
