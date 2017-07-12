@@ -1,8 +1,6 @@
 const PouchDB = require('pouchdb-http')
 const { map } = require('ramda')
-const db = new PouchDB(
-  'https://reedneassinegunterfultyr:3246da1179f98a4766f68f950a8c926f638cc8fd@90629927-b1a9-4251-9b99-f76bd5ad8656-bluemix.cloudant.com/test'
-)
+const db = new PouchDB(process.env.COUCHDB_URL + process.env.COUCHDB_NAME)
 
 console.log('process.env.COUCHDB_NAME: ', process.env.COUCHDB_NAME)
 

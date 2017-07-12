@@ -6,15 +6,11 @@ const dal = require('./dal.js')
 const port = process.env.PORT || 4000
 const HTTPError = require('node-http-error')
 const bodyParser = require('body-parser')
-const { pathOr } = require('ramda')
+const { pathOr, keys, difference } = require('ramda')
+
+const checkRequiredFields = require('./lib/check-required-fields')
 
 app.use(bodyParser.json())
-
-//  C - create (POST) a single cat
-//  R - read (GET)  a single cat
-//  U - update (PUT) a single cat
-//  D - delete (DELETE) a single cat
-//  L - list (GET) all the cats
 
 app.get('/', function(req, res, next) {
   res.send('Welcome to the Cats API, meow.')
@@ -27,6 +23,19 @@ app.get('/', function(req, res, next) {
 //   CREATE  - POST /cats
 app.post('/cats', function(req, res, next) {
   console.log('POST /cats, req.body: ', req.body)
+
+  const arrFieldsFailedValidation = checkRequiredFields(
+    ['type', 'name', 'ownerId'],
+    req.body
+  )
+
+  if (arrFieldsFailedValidation.length > 0) {
+    return next(
+      new HTTPError(400, 'Missing Required Fields', {
+        fields: arrFieldsFailedValidation
+      })
+    )
+  }
 
   dal.add(req.body, function(err, data) {
     if (err) return next(new HTTPError(err.status, err.message, err))
