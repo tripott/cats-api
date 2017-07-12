@@ -21,7 +21,7 @@ app.get('/', function(req, res, next) {
 })
 
 /////////////////////////
-///     CATS
+///   CATS, CATS, CATS!
 ////////////////////////
 
 //   CREATE  - POST /cats
@@ -49,25 +49,9 @@ app.get('/cats/:id', function(req, res, next) {
 
 //   UPDATE -  PUT /cats/:id
 
-// app.put('/cats/:id', function(req, res, next) {
-//   const catId = req.params.id
-//   console.log('cat id: ', catId)
-//   console.log('PUT /cats/:id, req.body: ', req.body)
-//
-//   dal.updateCat(Number(catId), req.body, function(err, data) {
-//     if (err) return next(new HTTPError(err.status, err.message, err))
-//     res.status(200).send(data)
-//   })
-// })
-
 app.put('/cats/:id', function(req, res, next) {
   const catId = req.params.id
-  console.log('cat id:', catId)
-
   const requestBodyCat = pathOr('no body', ['body'], req)
-
-  console.log('req.body:', requestBodyCat)
-
   if (catId != requestBodyCat._id) {
     return next(new HTTPError(400, 'Bad Request, meow.'))
   }
@@ -79,7 +63,7 @@ app.put('/cats/:id', function(req, res, next) {
 
 // DELETE -  DELETE /cats/:id
 app.delete('/cats/:id', function(req, res, next) {
-  const catId = Number(req.params.id)
+  const catId = req.params.id
   console.log('cat id: ', catId)
   dal.deleteCat(catId, function(err, data) {
     if (err) return next(new HTTPError(err.status, err.message, err))
@@ -90,7 +74,23 @@ app.delete('/cats/:id', function(req, res, next) {
 
 //   LIST - GET /cats
 app.get('/cats', function(req, res, next) {
-  dal.listCats(function(err, data) {
+  const limit = pathOr(null, ['query', 'limit'], req)
+
+  dal.listCats(limit, function(err, data) {
+    if (err) return next(new HTTPError(err.status, err.message, err))
+    res.status(200).send(data)
+  })
+})
+
+/////////////////////////
+//      BREEDS
+/////////////////////////
+//   LIST - GET /breeds
+
+app.get('/breeds', function(req, res, next) {
+  const limit = pathOr(null, ['query', 'limit'], req)
+
+  dal.listBreeds(limit, function(err, data) {
     if (err) return next(new HTTPError(err.status, err.message, err))
     res.status(200).send(data)
   })
