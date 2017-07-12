@@ -63,9 +63,37 @@ app.get('/cats/:id', function(req, res, next) {
 app.put('/cats/:id', function(req, res, next) {
   const catId = req.params.id
   const requestBodyCat = pathOr('no body', ['body'], req)
-  if (catId != requestBodyCat._id) {
-    return next(new HTTPError(400, 'Bad Request, meow.'))
+
+  if (requestBodyCat === 'no body') {
+    return next(new HTTPError(400, 'Missing cat json in request body.'))
   }
+
+  const arrFieldsFailedValidation = checkRequiredFields(
+    ['_id', '_rev', 'type', 'name', 'ownerId'],
+    requestBodyCat
+  )
+
+  if (arrFieldsFailedValidation.length > 0) {
+    return next(
+      new HTTPError(400, 'Missing Required Fields', {
+        fields: arrFieldsFailedValidation
+      })
+    )
+  }
+
+  if (requestBodyCat.type != 'cat') {
+    return next(new HTTPError(400, "'type' field value must be equal to 'cat'"))
+  }
+
+  if (catId != requestBodyCat._id) {
+    return next(
+      new HTTPError(
+        400,
+        'The cat id in the path must match the cat id in the request body'
+      )
+    )
+  }
+
   dal.updateCat(requestBodyCat, function(err, data) {
     if (err) return next(new HTTPError(err.status, err.message, err))
     res.status(200).send(data)
