@@ -37,7 +37,7 @@ app.post('/cats', function(req, res, next) {
     )
   }
 
-  dal.add(req.body, function(err, data) {
+  dal.addCat(req.body, function(err, data) {
     if (err) return next(new HTTPError(err.status, err.message, err))
     res.status(201).send(data)
   })

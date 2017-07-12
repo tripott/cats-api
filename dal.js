@@ -1,14 +1,22 @@
 const PouchDB = require('pouchdb-http')
 const { map } = require('ramda')
 const db = new PouchDB(process.env.COUCHDB_URL + process.env.COUCHDB_NAME)
+const pkGenerator = require('./lib/build-pk')
 
 console.log('process.env.COUCHDB_NAME: ', process.env.COUCHDB_NAME)
 
-const { append, find, reject, compose } = require('ramda')
+const { append, find, reject, compose, trim } = require('ramda')
 
 function addCat(cat, callback) {
-  catsData = append(cat, catsData)
-  callback(null, cat)
+  cat._id = pkGenerator('cat_', trim(cat.name) + ' ' + trim(cat.ownerId))
+
+  // "cat_big_time_owner_333"
+  db.put(cat, function(err, doc) {
+    if (err) callback(err)
+    callback(null, doc)
+  })
+
+  //console.log('cat PK value: ', catPKGenerator(cat, 'cat_'))
 }
 
 function updateCat(updatedCat, callback) {
