@@ -7,11 +7,21 @@ console.log('process.env.COUCHDB_NAME: ', process.env.COUCHDB_NAME)
 
 const { append, find, reject, compose, trim } = require('ramda')
 
+//////////////////////
+//      CATS
+//////////////////////
 function addCat(cat, callback) {
+  // example _id -- "cat_big_time_owner_333"
   cat._id = pkGenerator('cat_', trim(cat.name) + ' ' + trim(cat.ownerId))
 
-  // "cat_big_time_owner_333"
   db.put(cat, function(err, doc) {
+    if (err) callback(err)
+    callback(null, doc)
+  })
+}
+
+function getCat(catId, callback) {
+  db.get(catId, function(err, doc) {
     if (err) callback(err)
     callback(null, doc)
   })
@@ -19,47 +29,6 @@ function addCat(cat, callback) {
 
 function updateCat(updatedCat, callback) {
   db.put(updatedCat, function(err, doc) {
-    if (err) callback(err)
-    callback(null, doc)
-  })
-}
-
-function listCats(limit, callback) {
-  const options = limit
-    ? {
-        include_docs: true,
-        startkey: 'cat_',
-        endkey: 'cat_\uffff',
-        limit: limit
-      }
-    : {
-        include_docs: true,
-        startkey: 'cat_',
-        endkey: 'cat_\uffff'
-      }
-
-  list(options, callback)
-}
-
-function listBreeds(limit, callback) {
-  const options = limit
-    ? {
-        include_docs: true,
-        startkey: 'breed_',
-        endkey: 'breed_\uffff',
-        limit: limit
-      }
-    : {
-        include_docs: true,
-        startkey: 'breed_',
-        endkey: 'breed_\uffff'
-      }
-
-  list(options, callback)
-}
-
-function getCat(catId, callback) {
-  db.get(catId, function(err, doc) {
     if (err) callback(err)
     callback(null, doc)
   })
@@ -79,6 +48,81 @@ function deleteCat(catId, callback) {
     })
 }
 
+function listCats(limit, callback) {
+  const options = limit
+    ? {
+        include_docs: true,
+        startkey: 'cat_',
+        endkey: 'cat_\uffff',
+        limit: limit
+      }
+    : {
+        include_docs: true,
+        startkey: 'cat_',
+        endkey: 'cat_\uffff'
+      }
+
+  list(options, callback)
+}
+
+//////////////////////
+//      BREEDS
+//////////////////////
+function addBreed(breed, callback) {
+  // example _id -- "breed_pixie-bob"
+  breed._id = pkGenerator('breed_', trim(breed.breed))
+
+  db.put(breed, function(err, doc) {
+    if (err) callback(err)
+    callback(null, doc)
+  })
+}
+
+function getBreed(breedId, callback) {
+  db.get(breedId, function(err, doc) {
+    if (err) callback(err)
+    callback(null, doc)
+  })
+}
+
+function updateBreed(updatedBreed, callback) {
+  db.put(updatedBreed, function(err, doc) {
+    if (err) callback(err)
+    callback(null, doc)
+  })
+}
+
+function deleteBreed(breedId, callback) {
+  db
+    .get(breedId)
+    .then(function(doc) {
+      return db.remove(doc)
+    })
+    .then(function(result) {
+      callback(null, result)
+    })
+    .catch(function(err) {
+      callback(err)
+    })
+}
+
+function listBreeds(limit, callback) {
+  const options = limit
+    ? {
+        include_docs: true,
+        startkey: 'breed_',
+        endkey: 'breed_\uffff',
+        limit: limit
+      }
+    : {
+        include_docs: true,
+        startkey: 'breed_',
+        endkey: 'breed_\uffff'
+      }
+
+  list(options, callback)
+}
+
 ////////////////////////////
 //    helper functions
 ////////////////////////////
@@ -92,10 +136,14 @@ function list(options, callback) {
 const dal = {
   addCat,
   listCats,
-  listBreeds,
   getCat,
   deleteCat,
-  updateCat
+  updateCat,
+  addBreed,
+  getBreed,
+  updateBreed,
+  deleteBreed,
+  listBreeds
 }
 
 module.exports = dal

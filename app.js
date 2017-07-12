@@ -46,7 +46,6 @@ app.post('/cats', function(req, res, next) {
 })
 
 // READ - GET /cats/:id
-
 app.get('/cats/:id', function(req, res, next) {
   dal.getCat(req.params.id, function(err, data) {
     if (err) return next(new HTTPError(err.status, err.message, err))
@@ -124,14 +123,104 @@ app.get('/cats', function(req, res, next) {
 /////////////////////////
 //      BREEDS
 /////////////////////////
-// CRUDL
 // CREATE - POST /breeds  (Hint: need a req.body)
-app.post('/breeds', function(req, res, next) {})
-// READ - GET /breeds/:id
+app.post('/breeds', function(req, res, next) {
+  const arrFieldsFailedValidation = checkRequiredFields(
+    ['type', 'breed', 'desc'],
+    req.body
+  )
 
+  if (arrFieldsFailedValidation.length > 0) {
+    return next(
+      new HTTPError(
+        400,
+        `Missing Required Fields. Provide a valid breed json document in the request body.  Example: {'type': 'breed','breed': 'persian','desc': 'The Persian cat is a long-haired breed of cat characterized by its round face and short muzzle. It is also known as the Persian Longhair.'}`,
+        {
+          fields: arrFieldsFailedValidation
+        }
+      )
+    )
+  }
+
+  if (path(['body', 'type'], req) != 'breed') {
+    return next(
+      new HTTPError(
+        400,
+        `'type' field value must be equal to 'breed'. Provide a valid breed json document in the request body.  Example: {'type': 'breed','breed': 'persian','desc': 'The Persian cat is a long-haired breed of cat characterized by its round face and short muzzle. It is also known as the Persian Longhair.'}`
+      )
+    )
+  }
+
+  dal.addBreed(req.body, function(err, data) {
+    if (err) return next(new HTTPError(err.status, err.message, err))
+    res.status(200).send(data)
+  })
+})
+
+// READ - GET /breeds/:id
+app.get('/breeds/:id', function(req, res, next) {
+  dal.getBreed(req.params.id, function(err, data) {
+    if (err) return next(new HTTPError(err.status, err.message, err))
+    if (data) {
+      res.status(200).send(data)
+    } else {
+      next(new HTTPError(404, 'Not Found', { path: req.path }))
+    }
+  })
+})
 // UPDATE - PUT /breeds/:id   (Hint: need a req.body)
 
+app.put('/breeds/:id', function(req, res, next) {
+  const breedId = req.params.id
+  const requestBodyBreed = pathOr('no body', ['body'], req)
+
+  if (requestBodyBreed === 'no body') {
+    return next(new HTTPError(400, 'Missing breed json in request body.'))
+  }
+
+  const arrFieldsFailedValidation = checkRequiredFields(
+    ['_id', '_rev', 'type', 'breed', 'desc'],
+    requestBodyBreed
+  )
+
+  if (arrFieldsFailedValidation.length > 0) {
+    return next(
+      new HTTPError(400, 'Missing Required Fields', {
+        fields: arrFieldsFailedValidation
+      })
+    )
+  }
+
+  if (requestBodyBreed.type != 'breed') {
+    return next(
+      new HTTPError(400, "'type' field value must be equal to 'breed'")
+    )
+  }
+
+  if (breedId != requestBodyBreed._id) {
+    return next(
+      new HTTPError(
+        400,
+        'The breed id in the path must match the breed id in the request body'
+      )
+    )
+  }
+
+  dal.updateBreed(requestBodyBreed, function(err, data) {
+    if (err) return next(new HTTPError(err.status, err.message, err))
+    res.status(200).send(data)
+  })
+})
+
 // DELETE - DELETE /breeds/:id
+app.delete('/breeds/:id', function(req, res, next) {
+  const id = req.params.id
+  dal.deleteBreed(id, function(err, data) {
+    if (err) return next(new HTTPError(err.status, err.message, err))
+
+    res.status(200).send(data)
+  })
+})
 
 //  LIST - GET /breeds
 app.get('/breeds', function(req, res, next) {
